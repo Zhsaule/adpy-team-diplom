@@ -1,7 +1,7 @@
 import random
 import requests
 import time
-from Token import USER_ID, personal_token  # персональный токен
+from Token import GROUP_TOKEN, personal_token  # персональный токен
 
 access_token = personal_token
 
@@ -81,5 +81,25 @@ class VKinder_get_photo:
             if len(photos) > 3:
                 photos = photos[:3]
             for item in photos:
-                attachment.append(f'https://vk.com/photo{self.owner_id}_{item["id"]}')
+                attachment.append(f'photo{self.owner_id}_{item["id"]}')
         return attachment
+
+
+class MessagesSend:
+
+    def __init__(self, user_id, item):
+        self.vk_url = 'https://api.vk.com/method/'
+        self.user_id = user_id
+        self.params = {
+            "access_token": GROUP_TOKEN,
+            "user_id": self.user_id,
+            "peer_id": self.user_id,
+            "attachment": item,
+            "v": 5.131,
+            "random_id": 0
+            }
+    def send_photo(self):
+        url_send_message = self.vk_url + "messages.send?"
+        req = requests.post(url_send_message, params=self.params).json()
+        return req
+

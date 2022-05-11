@@ -1,11 +1,12 @@
 import time
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from Token import TOKEN #токен группы вк
+from Token import GROUP_TOKEN #токен группы вк
 from vkinder import VKinder_get_info, VKinder_get_photo
+from vkinder import MessagesSend
 
 
-def write_msg(user_id, message, vk_session=vk_api.VkApi(token=TOKEN)):
+def write_msg(user_id, message, vk_session=vk_api.VkApi(token=GROUP_TOKEN)):
     vk_session.method('messages.send', {'user_id': user_id, 'message': message, 'random_id': 0})
 
 favorites = []
@@ -36,8 +37,8 @@ def run_bot():
                             user_info.append([f"{event.user_id}, {sex}, {age}, {city}"])
                         if VKinder_get_photo(vk_inf.get_inf()[0][2]).get_photo_url() is not None:
                             for i in VKinder_get_photo(vk_inf.get_inf()[0][2]).get_photo_url():
-                                time.sleep(0.2)
-                                write_msg(event.user_id, i)
+                                time.sleep(0.1)
+                                MessagesSend(event.user_id, i).send_photo()
                 print(user_info)
                 if message == 'нравится':
                     favorites.append([event.user_id, *vk_inf.get_inf()])

@@ -1,6 +1,5 @@
 import random
 import requests
-import time
 from Token import GROUP_TOKEN, personal_token  # персональный токен
 
 access_token = personal_token
@@ -9,7 +8,9 @@ access_token = personal_token
 class VKinder_get_info:
 
     def __init__(self, sex, age, city):
-        global status_
+        self.sex = sex
+        self.age = age
+        self.city = city.title()
         if sex == 'ж':
             sex_ = 2
         elif sex == 'м':
@@ -21,10 +22,10 @@ class VKinder_get_info:
             "access_token": access_token,
             "v": 5.131,
             'oauth': 1,
-            'count': 1,
+            'count': 100,
             'offset': random.randrange(0, 100),
             'sort': 0,
-            "fields": 'sex, city, photo_id, screen_name',
+            "fields": 'sex, city, photo_id, screen_name, can_write_private_message',
             "age_from": age - 3,
             "age_to": age + 3,
             "sex": sex_,
@@ -35,27 +36,28 @@ class VKinder_get_info:
 
     """Получаем информацию для запроса урла фото"""
 
+    def _get_all_result(self):
+        url_get_info = self.vk_url + "users.search?"
+        req = requests.get(url_get_info, params=self.params).json()
+        all_result_list = [req['response']['items']]
+        return all_result_list
+
     def get_inf(self):
-        result = []
-        while True:
-            url_get_info = self.vk_url + "users.search?"
-            req = requests.get(url_get_info, params=self.params).json()
-            time.sleep(0.1)
-            if req['response']['items'] is not None:
-                for item in req['response']['items']:
-                    time.sleep(0.1)
-                    if item['is_closed'] is False:
-                        result.append([item['first_name'], item['last_name'], item['id'],
-                                       f"https://vk.com/{item['screen_name']}"])
+        try:
+            all_result_list = self._get_all_result()
+            for items in all_result_list:
+                for i in range(len(items)):
+                    item = items[i]
+                    if item['is_closed'] is False and item['can_write_private_message'] == 1:
+                        print(item)
+                        result = item['first_name'], item['last_name'], item[
+                            'id'], f"https://vk.com/{item['screen_name']}"
+                        return result
                     else:
-                        result.append([item['first_name'], item['last_name'], item['id'],
-                                       f"https://vk.com/{item['screen_name']} - Закрытый профиль!"])
-                    break
-                else:
-                    continue
-            if len(result) != 0:
-                break
-        return result
+                        continue
+        except:
+            KeyError("Проверьте правильность набора!")
+        return None
 
 
 class VKinder_get_photo:
@@ -97,9 +99,13 @@ class MessagesSend:
             "attachment": item,
             "v": 5.131,
             "random_id": 0
-            }
+        }
+
     def send_photo(self):
         url_send_message = self.vk_url + "messages.send?"
         req = requests.post(url_send_message, params=self.params).json()
         return req
+
+
+
 

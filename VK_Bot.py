@@ -8,7 +8,6 @@ from vkinder import MessagesSend
 vk_session = vk_api.VkApi(token=GROUP_TOKEN)
 start_keyboard = VkKeyboard(inline=True)
 start_keyboard.add_button("Старт", VkKeyboardColor.PRIMARY)
-
 main_keyboard = VkKeyboard(inline=True)
 main_keyboard.add_button("Авто", VkKeyboardColor.PRIMARY)
 main_keyboard.add_button("Запрос", VkKeyboardColor.PRIMARY)
@@ -45,15 +44,21 @@ def bot():
                 if str(message) == 'запрос':
                     write_msg(event.user_id, f'Введите город, возраст,\n'
                                              f'пол(м/ж) через запятую или пробел:')
-                    print(f'if1 запрос  {message}')
+                    # print(f'if1 запрос  {message}')
 
                 if str(message) == 'авто':
-                    auto_string = get_user_param(event.user_id)
-                    auto_keyboard = VkKeyboard(inline=True)
-                    auto_keyboard.add_button(auto_string, VkKeyboardColor.PRIMARY)
-                    write_msg(event.user_id, f'Подбор для вас\n'
-                                             f'по вашим данным:', auto_keyboard)
                     print(f'if2 авто  {message}')
+                    try:
+                        auto_string = get_user_param(event.user_id)
+                        auto_keyboard = VkKeyboard(inline=True)
+                        auto_keyboard.add_button(auto_string, VkKeyboardColor.PRIMARY)
+                        write_msg(event.user_id, f'Подбор для вас\n'
+                                                 f'по вашим данным:', auto_keyboard)
+                    except:
+                        KeyError("Заполните в профиле ваши данные: пол, дату и год рождения!")
+                        write_msg(event.user_id, 'Проверьте правильность набора. Введите: город, возраст, пол(м/ж).',
+                                  main_keyboard)
+
 
                 if len(message.split(',')) == 1 and message not in key_word:
                     message = ",".join(message.split(" "))
@@ -102,8 +107,12 @@ def bot():
 
                 print(f'end user_info {user_info}')
                 if message == '❤':
+                    favor_keyboard = VkKeyboard(inline=True)
+                    favor_keyboard.add_button("Далее", VkKeyboardColor.PRIMARY)
+                    favor_keyboard.add_button("Стоп", VkKeyboardColor.PRIMARY)
+
                     favorites.append([event.user_id, info])
-                    write_msg(event.user_id, f'❤ сохранили в Избранное ;\n', find_keyboard)
+                    write_msg(event.user_id, f'❤ сохранили в Избранное ;\n', favor_keyboard)
 
                 elif str(message) == '❤❤❤':
                     write_msg(event.user_id, f'❤ Ваш список избранных ❤')

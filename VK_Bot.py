@@ -29,7 +29,7 @@ user_info = []
 
 
 def bot():
-    global vk_inf, message, info
+    #global vk_inf, message, info
     key_word = ['старт', 'далее', '❤', '❤❤❤', 'стоп', 'авто', 'запрос', 'стоп']
     longpool = VkLongPoll(vk_session)
     for event in longpool.listen():
@@ -67,7 +67,7 @@ def bot():
 
                 if len(message.split(',')) != 3 and message not in key_word:
                     # ('старт', 'далее', '❤', '❤❤❤', 'стоп', 'авто', 'запрос'):
-                    write_msg(event.user_id, 'Проверьте правильность набора1. Введите: город, возраст, пол(м/ж).')
+                    write_msg(event.user_id, 'Проверьте правильность набора1. Введите: город, возраст, пол(м/ж).', main_keyboard)
                     print(f'if5 !=3  {message}')
                 elif len(message.split(',')) == 3 or message == 'далее':
                     print(f'elif5 ==3 and далее {response} message {message}')

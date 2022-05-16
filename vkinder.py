@@ -1,16 +1,19 @@
 import random
+from datetime import datetime
 from pprint import pprint
 import requests
-from Token import GROUP_TOKEN, personal_token  # персональный токен
+from team.token import GROUP_TOKEN, personal_token  # персональный токен
 access_token = personal_token
 
 coincidence = []
+
+
 class VKinder_get_info:
     def __init__(self, sex, age, city):
         if sex == 'ж':
-            sex = 2
-        elif sex == 'м':
             sex = 1
+        elif sex == 'м':
+            sex = 2
         else:
             sex = 0
         self.vk_url = 'https://api.vk.com/method/'
@@ -105,3 +108,19 @@ class MessagesSend:
         url_send_message = self.vk_url + "messages.send?"
         req = requests.post(url_send_message, params=self.params).json()
         return req
+
+
+def get_user_param(user):
+    params = {
+        "access_token": access_token,
+        "v": 5.131,
+        "user_id": user,
+        "fields": 'sex, bdate, city, age'
+    }
+    req = requests.get("https://api.vk.com/method/users.get?", params=params).json()
+    user_param = req['response'][0]
+    request = f"{user_param['city']['title'].split('/')[0].strip()}," \
+              f"{datetime.now().year - datetime.strptime(user_param['bdate'], '%d.%m.%Y').year}," \
+              f"{'ж' if user_param['sex'] == 2 else 'м'}" # противоположный пол
+
+    return request

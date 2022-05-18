@@ -2,8 +2,10 @@ import random
 from datetime import datetime
 from pprint import pprint
 import requests
-from team.token import GROUP_TOKEN, personal_token  # персональный токен
+from auth_data import GROUP_TOKEN, personal_token  # персональный токен
+
 access_token = personal_token
+from Data.ins_data import sel_prop_data
 
 coincidence = []
 
@@ -35,13 +37,11 @@ class VKinder_get_info:
 
     """Получаем информацию для запроса урла фото"""
 
-
     def get_all_result(self):
         url_get_info = self.vk_url + "users.search?"
         req = requests.get(url_get_info, params=self.params).json()
         all_result_list = [req['response']['items']]
         return all_result_list
-
 
     def get_inf(self, user_id):
         try:
@@ -50,7 +50,7 @@ class VKinder_get_info:
                 for i in range(len(items)):
                     item = items[i]
                     if item['is_closed'] is False and item['can_write_private_message'] == 1 and item['has_photo'] == 1:
-                        if f"{user_id}-{item['id']}" not in coincidence:
+                        if item['id'] not in sel_prop_data(user_id):
                             result = item['first_name'], item['last_name'], item[
                                 'id'], f"https://vk.com/{item['screen_name']}"
                             coincidence.append(f"{user_id}-{item['id']}")
@@ -121,6 +121,6 @@ def get_user_param(user):
     user_param = req['response'][0]
     request = f"{user_param['city']['title'].split('/')[0].strip()}," \
               f"{datetime.now().year - datetime.strptime(user_param['bdate'], '%d.%m.%Y').year}," \
-              f"{'ж' if user_param['sex'] == 2 else 'м'}" # противоположный пол
+              f"{'ж' if user_param['sex'] == 2 else 'м'}"  # противоположный пол
 
     return request

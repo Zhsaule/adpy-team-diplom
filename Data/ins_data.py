@@ -1,6 +1,6 @@
 from sqlalchemy import *
 # from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 # from sqlalchemy import MetaData
 from Data.auth_db import password
 # from auth_db import password
@@ -8,6 +8,7 @@ from Data.auth_db import password
 Base = declarative_base()
 engine = create_engine("postgresql+psycopg2://postgres:" + password + "@localhost:5432/vkinder")
 metadata = MetaData(bind=engine)
+session = Session()
 print(engine)
 
 
@@ -31,6 +32,9 @@ class UsersPropose(Base):
     __table__ = Table('Users/Propose', metadata, autoload=True)
 
 
+user_client = UserClient
+user_prop = UsersPropose
+favorite = Favorite
 # ins_data(event.user_id, age, sex, city)
 
 
@@ -91,8 +95,8 @@ def ins_propose_data(user_id, client_id):
             p_client_id=client_id
         )
         conn.execute(ins)
-        ins_user_prop(user_id, client_id)
         print('add to proposal')
+        ins_user_prop(user_id=user_id, client_id=client_id)
 
 
 def ins_user_prop(user_id, client_id):
@@ -102,19 +106,27 @@ def ins_user_prop(user_id, client_id):
         prop_client_id=client_id
     )
     conn.execute(ins)
+    print('add to u_pro')
 
 
 def sel_prop_data(user_id):
     conn = engine.connect()
-    user_prop = UsersPropose.__table__
-    sel = select(user_prop).where(user_prop.c.user_id == user_id)
+    sel = select(user_prop).where(user_prop.user_id == user_id)
     res = conn.execute(sel)
     res_list = ([i[1] for i in res])
     return res_list
 
 
+def select_fav_client(user_id):
+    conn = engine.connect()
+    sel = select(favorite).join(user_client).where(user_client.user_id == user_id)
+    res = conn.execute(sel)
+    res_list_fav = ([i for i in res])
+    return res_list_fav
+
+
 # conn = engine.connect()
-# print(sel_prop_data('18245417'))
+# print(select_fav_client('18245417'))
 # s = user_prop.select()
 # res = conn.execute(s)
 # row = res.fetchall()

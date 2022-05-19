@@ -10,7 +10,7 @@ from Data.ins_data import sel_prop_data
 coincidence = []
 
 
-class VKinder_get_info:
+class VKinderGetInfo:
     def __init__(self, sex, age, city):
         if sex == 'ж':
             sex = 1
@@ -23,7 +23,7 @@ class VKinder_get_info:
             "access_token": access_token,
             "v": 5.131,
             'oauth': 1,
-            'count': 10,
+            'count': 1000,
             'offset': random.randrange(0, 100),
             'sort': 0,
             "fields": 'sex, city, photo_id, has_photo, screen_name, can_write_private_message',
@@ -46,16 +46,22 @@ class VKinder_get_info:
     def get_inf(self, user_id):
         try:
             all_result_list = self.get_all_result()
+            i = 1
             for items in all_result_list:
                 for i in range(len(items)):
                     item = items[i]
                     if item['is_closed'] is False and item['can_write_private_message'] == 1 and item['has_photo'] == 1:
+                        i += 1
                         if item['id'] not in sel_prop_data(user_id):
+                            print(f'На {i} результате выполнилась проверка не вхождения в sel_prop_data')
+                            print()
                             result = item['first_name'], item['last_name'], item[
                                 'id'], f"https://vk.com/{item['screen_name']}"
                             coincidence.append(f"{user_id}-{item['id']}")
                             print(coincidence)
                             return result
+                        else:
+                            continue
                     else:
                         continue
         except:
@@ -63,7 +69,7 @@ class VKinder_get_info:
             return None
 
 
-class VKinder_get_photo:
+class VKinderGetPhoto:
     def __init__(self, owner_id):
         self.owner_id = owner_id
         self.vk_url = 'https://api.vk.com/method/'

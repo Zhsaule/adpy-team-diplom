@@ -1,4 +1,5 @@
 
+
 create table if not exists Users (
 	user_id int primary key not null,
 	user_age int not null,
@@ -11,7 +12,7 @@ create table if not exists FavoriteClients (
 	client_name varchar(20) not null,
 	client_surname varchar(50) not null,
 	client_link text not null,
-	client_photo: text
+	client_photo text
 );
 
 create table "Users/Client" (
@@ -20,13 +21,10 @@ create table "Users/Client" (
 	primary key(user_id, favoriteclient_id)
 );
 
-create table if not exists Propose (
-	p_client_id int primary key not null
-);
 
 create table "Users/Propose" (
 	user_id int references users(user_id) not null,
-	prop_client_id int references Propose(p_client_id) not null,
+	prop_client_id int not null,
 	primary key(user_id, prop_client_id)
 );
 

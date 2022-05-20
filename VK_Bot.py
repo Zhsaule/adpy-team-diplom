@@ -145,7 +145,6 @@ def bot():
                             i = i.replace('{', '').replace('}', '')
                             print(f'fav - {i}')
                             MessagesSend(event.user_id, i).send_photo()
-                        write_msg(event.user_id, 'Следущий', next_keyboard)
                         if str(message) == 'стоп':
                             break
 

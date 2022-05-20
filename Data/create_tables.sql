@@ -1,3 +1,7 @@
+drop table if exists Users cascade;
+drop table if exists FavoriteClients cascade;
+drop table if exists "Users/Client" cascade;
+drop table if exists "Users/Propose" cascade;
 
 
 create table if not exists Users (
@@ -12,7 +16,7 @@ create table if not exists FavoriteClients (
 	client_name varchar(20) not null,
 	client_surname varchar(50) not null,
 	client_link text not null,
-	client_photo text
+	client_photos text
 );
 
 create table "Users/Client" (
@@ -21,11 +25,8 @@ create table "Users/Client" (
 	primary key(user_id, favoriteclient_id)
 );
 
-
 create table "Users/Propose" (
 	user_id int references users(user_id) not null,
 	prop_client_id int not null,
 	primary key(user_id, prop_client_id)
 );
-
-	

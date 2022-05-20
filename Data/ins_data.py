@@ -1,12 +1,8 @@
 from sqlalchemy import *
-# from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, Session
-# from sqlalchemy import MetaData
-from Data.auth_db import password
-# from auth_db import password
 
 Base = declarative_base()
-engine = create_engine("postgresql+psycopg2://postgres:" + password + "@localhost:5432/vkinder")
+engine = create_engine("postgresql+psycopg2://postgres:admin@localhost:5432/vkinder")
 
 metadata = MetaData(bind=engine)
 session = Session()
@@ -103,11 +99,18 @@ def sel_prop_data(user_id):
     return res_list
 
 
+# Выбор запроса по пользователю
+def sel_user_data(user_id):
+    conn = engine.connect()
+    sel = select(user_client).where(user_client.user_id == user_id)
+    res = conn.execute(sel)
+    res_list = ([i[1] for i in res])
+    return res_list
+
+
 def select_fav_client(user_id):
     conn = engine.connect()
     sel = select(favorite).join(user_client).where(user_client.user_id == user_id)
     res = conn.execute(sel)
     res_list_fav = ([i for i in res])
     return res_list_fav
-
-

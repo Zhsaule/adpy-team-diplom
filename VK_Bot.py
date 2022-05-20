@@ -4,7 +4,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from team.token import GROUP_TOKEN
 from vkinder import VKinder_get_info, VKinder_get_photo, get_user_param
 from vkinder import MessagesSend
-from Data.ins_data import ins_data, ins_fav_data, ins_propose_data, select_fav_client
+from Data.ins_data import ins_data, ins_fav_data, ins_propose_data, select_fav_client, sel_user_data
 
 vk_session = vk_api.VkApi(token=GROUP_TOKEN)
 start_keyboard = VkKeyboard(inline=True)
@@ -31,7 +31,6 @@ def write_msg(user_id, message, keyboard=None):
     vk_session.method('messages.send', post)
 
 
-# favorites = []
 user_info = []
 
 
@@ -45,13 +44,11 @@ def bot():
                 message = event.text.lower()
                 print(f'main {message}')
 
-                if str(message) == 'запрос':
-                    print('if Запрос')
+                if message == 'запрос':
                     write_msg(event.user_id, f'Введите город, возраст,\n'
                                              f'пол(м/ж) через запятую или пробел:')
 
                 if str(message) == 'авто':
-                    print('if Авто')
                     try:
                         auto_string = get_user_param(event.user_id)
                         auto_keyboard = VkKeyboard(inline=True)
@@ -63,95 +60,94 @@ def bot():
                                   main_keyboard)
 
                 if message not in key_word and message != 'далее':
-                    print('if not in')
                     try:
                         req_err = False
                         message = ",".join(message.split(" ")) if len(message.split(',')) == 1 else message
                         print(message)
-                        print(f' split {len(message.split(","))} kkk {message}')
+                        if len(message.split(',')) != 3:
+                            write_msg(event.user_id,
+                                      'Введите три параметра поиска через запятую.')
                         response = message.split(",")
                         response = [i.strip().title() for i in response]
                         city, age, sex = response
-                        print(f' 1')
-
                         if sex.lower() not in ('м', 'ж'):
                             write_msg(event.user_id, 'Проверьте пол (м или ж).')
                             print(f' sex _{sex}_ {message}')
                             req_err = True
-                        print(f' 1')
-
                         if age.isdigit() is not True:
                             write_msg(event.user_id, 'Проверьте возраст (целое число).')
                             req_err = True
-
-                        print(f' 1')
                         if int(age) < 16:
                             write_msg(event.user_id, 'Возрастные ограничения 16.')
                             req_err = True
-
-                        print(f' 1')
-                        if len(message.split(',')) != 3:
-                            print(f' split {len(message.split(","))} kkk {message}')
-                            write_msg(event.user_id,
-                                      'Проверьте правильность набора. Введите: город, возраст, пол(м/ж).')
-                    except KeyError:
-                        KeyError("Ошибка проверки введенного запроса пользователя!")
-                        write_msg(event.user_id, 'Проверьте запрос1: Город, возраст, пол(м/ж).')
+                        if req_err is False:
+                            print('req_err is False:')
+                            print(f'sex {sex} age {age} city {str(city.title())} user id {event.user_id}')
+                            # сохраняем пользовательские данные в таб. Users
+                            ins_data(event.user_id, int(age), str(sex).lower(), str(city.title()))
+                    except ValueError:
+                        ValueError("Ошибка проверки введенного запроса пользователя!")
+                        write_msg(event.user_id, 'Введите еще раз: Город, возраст, пол(м/ж).')
                         req_err = True
 
                 if req_err is False and message not in key_word:
-                    print('if req err')
-                    print(f'sex {sex} age {age} city {str(city.title())} user id {event.user_id}')
-                    info = VKinder_get_info(str(sex).lower(), int(age), str(city.title())).get_inf(
+                    req = sel_user_data(event.user_id)
+                    print(f'sex {req[-1][2]} age {req[-1][1]} city {str(req[-1][3].title())} user id {event.user_id}')
+                    info = VKinder_get_info(str(req[-1][2]).lower(), int(req[-1][1]), str(req[-1][3].title())).get_inf(
                         event.user_id)
-                    # сохраняем пользовательские данные в таб. Users
-                    ins_data(event.user_id, int(age), str(sex).lower(), str(city.title()))
+                    print(f'sex {sex} age {age} city {str(city.title())} user id {event.user_id}')
+                    # info = VKinder_get_info(str(sex).lower(), int(age), str(city.title())).get_inf(
+                    #     event.user_id)
+
                     if info is None:
                         write_msg(event.user_id, 'Не найдено совпадений. Попробуйте еще раз!', main_keyboard)
                         print(f'info None!!!!')
                     else:
                         if len(info) != 0:
                             write_msg(event.user_id, f'{info[0]} {info[1]} - {info[3]}')
-                            print(info)
+                            print(f'info {info}')
+                            # добавляем полученные данные в таб. Propose
+                            print(f'{event.user_id} fff {info[0]} {info[1]} - {info[3]}')
+                            print(user_info)
                             # добавляем полученные данные в таб. Propose
                             ins_propose_data(event.user_id, info[2])
                             if [f"{event.user_id}, {sex}, {age}, {city}"] not in user_info:
                                 user_info.append([f"{event.user_id}, {sex}, {age}, {city}"])
-                                photos = VKinder_get_photo(info[2]).get_photo_url()
-                                if photos is not None:
-                                    for i in photos:
-                                        print(photos)
-                                        MessagesSend(event.user_id, i).send_photo()
-                                write_msg(event.user_id, f'Нажмите кнопку ❤, если нравится;\n'
-                                                         f'"Далее" для продолжения поиска;\n'
-                                                         f'"Стоп" выход.', find_keyboard)
-                            else:
-                                write_msg(event.user_id, "Не найдено совпадений. Попробуйте еще раз!",
-                                          next_keyboard)
+                            photos = VKinder_get_photo(info[2]).get_photo_url()
+
+                            if photos is not None:
+                                for i in photos:
+                                    print(i)
+                                    MessagesSend(event.user_id, i).send_photo()
+                            write_msg(event.user_id, f'Нажмите ❤, если нравится;\n'
+                                                     f'"Далее" для продолжения поиска;\n'
+                                                     f'"Стоп" выход.', find_keyboard)
+
+                        else:
+                            write_msg(event.user_id, "Не найдено совпадений. Попробуйте еще раз!",
+                                      main_keyboard)
 
                 if message == '❤':
                     photos = VKinder_get_photo(info[2]).get_photo_url()
-                    # добавдяем данные понравившегося человека в "Избранное"
+                    # добавляем данные понравившегося человека в "Избранное"
                     ins_fav_data(event.user_id, info[2], info[0], info[1], info[3], photos)
-                    # favorites.append([event.user_id, info])
                     write_msg(event.user_id, f'❤ сохранили в Избранное ;\n', next_keyboard)
 
-                elif str(message) == '❤❤❤':
+                if message == '❤❤❤':
                     write_msg(event.user_id, f'❤ Ваш список избранных ❤')
                     favorites = select_fav_client(event.user_id)
                     for item in favorites:
                         write_msg(event.user_id, f'{item[2]} {item[1]} - {item[3]}')
-                        for i in item[4].split(","):
-                            i = i.replace('{', '').replace('}', '')
-                            print(f'fav - {i}')
-                            MessagesSend(event.user_id, i).send_photo()
-                        if str(message) == 'стоп':
-                            break
+                        # for i in item[4].split(","):
+                        #     i = i.replace('{', '').replace('}', '')
+                        #     print(f'fav - {i}')
+                        #     MessagesSend(event.user_id, i).send_photo()
 
-                    write_msg(event.user_id, f'❤❤❤end❤❤❤', main_keyboard)
+                    write_msg(event.user_id, f'❤❤❤end❤❤❤')
+                    message = 'стоп'
 
-                elif message == 'стоп':
-                    write_msg(event.user_id, f'Вы в основном меню 👋\n'
+                if message == 'стоп':
+                    write_msg(event.user_id, f'Вы снова в основном меню 👋\n'
                                              f'❤❤❤ для просмотра своего списка Избранных\n'
                                              f'или повторите поиск', main_keyboard)
 
@@ -176,3 +172,4 @@ def run_bot():
                                                  f'Vkinder6 приветствует Вас!\n'
                                                  f'Хотите с кем нибудь познакомиться?\n'
                                                  f'Нажмите "Старт"!!!', start_keyboard)
+                        continue

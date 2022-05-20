@@ -25,6 +25,7 @@ class UsersPropose(Base):
     __table__ = Table('Users/Propose', metadata, autoload=True)
 
 
+users = Users
 user_client = UserClient
 user_prop = UsersPropose
 favorite = Favorite
@@ -95,16 +96,16 @@ def sel_prop_data(user_id):
     conn = engine.connect()
     sel = select(user_prop).where(user_prop.user_id == user_id)
     res = conn.execute(sel)
-    res_list = ([i[1] for i in res])
+    res_list = [i for i in res]
     return res_list
 
 
 # Выбор запроса по пользователю
 def sel_user_data(user_id):
     conn = engine.connect()
-    sel = select(user_client).where(user_client.user_id == user_id)
+    sel = select(users).where(users.user_id == user_id)
     res = conn.execute(sel)
-    res_list = ([i[1] for i in res])
+    res_list = ([i for i in res])
     return res_list
 
 

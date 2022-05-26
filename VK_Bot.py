@@ -1,7 +1,7 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from team.token import GROUP_TOKEN
+from token import GROUP_TOKEN
 from vkinder import VKinder_get_info, VKinder_get_photo, get_user_param
 from vkinder import MessagesSend
 from Data.ins_data import ins_data, ins_fav_data, ins_propose_data, select_fav_client, sel_user_data
